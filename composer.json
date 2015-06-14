@@ -1,0 +1,23 @@
+{
+    "name": "mindweb/rabbitmq-persist",
+    "description": "",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Marcin Czołnowski",
+            "email": "marcin@czolnowski.net"
+        }
+    ],
+    "require": {
+        "mindweb/subscriber": "dev-master",
+        "mindweb/recognizer": "dev-master",
+        "mindweb/persist": "dev-master",
+        "videlalvaro/php-amqplib": "v2.1.0"
+    },
+    "autoload": {
+        "psr-0": {
+            "Mindweb\\RabbitMQPersist\\": "src"
+        }
+    }
+}
