@@ -3,7 +3,6 @@ namespace Mindweb\RabbitMQPersist;
 
 use Mindweb\Persist as Adapter;
 use Mindweb\Persist\Event\PersistEvent;
-
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -65,6 +64,7 @@ class Persist extends Adapter\Persist
             $this->configuration['insist'],
             $this->configuration['login_method'],
             $this->configuration['login_response'],
+            $this->configuration['locale'],
             $this->configuration['connection_timeout'],
             $this->configuration['read_write_timeout']
         );
