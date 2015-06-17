@@ -4,7 +4,8 @@ namespace Mindweb\RabbitMQPersist;
 use Mindweb\Persist as Adapter;
 use Mindweb\Persist\Event\PersistEvent;
 
-use PhpAmqpLib\Connection\AMQPConnection;
+use PhpAmqpLib\Channel\AMQPChannel;
+use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -20,24 +21,13 @@ class Persist extends Adapter\Persist
      */
     public function persist(PersistEvent $persistEvent)
     {
-        $connection = new AMQPConnection(
-            $this->configuration['host'],
-            $this->configuration['port'],
-            $this->configuration['user'],
-            $this->configuration['password']
+        $this->getChannel()->basic_publish(
+            new AMQPMessage(
+                json_encode($persistEvent->getAttribution())
+            ),
+            $this->configuration['exchange'],
+            $this->configuration['routingKey']
         );
-        $channel = $connection->channel();
-
-        $channel->queue_declare(
-            $this->configuration['queue'],
-            false,
-            false,
-            false,
-            false
-        );
-
-        $msg = new AMQPMessage(json_encode($persistEvent->getAttribution()));
-        $channel->basic_publish($msg, '', $this->configuration['routingKey']);
 
         $persistEvent->addPersistResult(
             'rabbitmq',
@@ -59,5 +49,26 @@ class Persist extends Adapter\Persist
     public function initialize(array $configuration = array())
     {
         $this->configuration = $configuration;
+    }
+
+    /**
+     * @return AMQPChannel
+     */
+    private function getChannel()
+    {
+        $connection = new AMQPStreamConnection(
+            $this->configuration['host'],
+            $this->configuration['port'],
+            $this->configuration['user'],
+            $this->configuration['password'],
+            $this->configuration['vhost'],
+            $this->configuration['insist'],
+            $this->configuration['login_method'],
+            $this->configuration['login_response'],
+            $this->configuration['connection_timeout'],
+            $this->configuration['read_write_timeout']
+        );
+
+        return $connection->channel();
     }
 }
