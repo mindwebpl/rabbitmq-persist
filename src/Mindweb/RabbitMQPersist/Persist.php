@@ -20,12 +20,23 @@ class Persist extends Adapter\Persist
      */
     public function persist(PersistEvent $persistEvent)
     {
+        $attribution = $persistEvent->getAttribution();
+        $queueMapping = null;
+        if (isset($attribution['_queueMapping'])) {
+            $queueMapping = $attribution['_queueMapping'];
+            unset ($attribution['_queueMapping']);
+        }
+
         $this->getChannel()->basic_publish(
             new AMQPMessage(
-                json_encode($persistEvent->getAttribution())
+                json_encode(
+                    $attribution
+                )
             ),
-            $this->configuration['exchange'],
-            $this->configuration['routingKey']
+            $queueMapping !== null && isset($queueMapping['exchange']) ?
+                $queueMapping['exchange'] : $this->configuration['exchange'],
+            $queueMapping !== null && isset($queueMapping['routingKey']) ?
+                $queueMapping['routingKey'] : $this->configuration['routingKey']
         );
 
         $persistEvent->addPersistResult(
@@ -64,7 +75,6 @@ class Persist extends Adapter\Persist
             $this->configuration['insist'],
             $this->configuration['login_method'],
             $this->configuration['login_response'],
-            $this->configuration['locale'],
             $this->configuration['connection_timeout'],
             $this->configuration['read_write_timeout']
         );
